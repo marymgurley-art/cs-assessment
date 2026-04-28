@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CharacterStrong — Teacher Guidance Prototype</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --dark:    #1B4F5B;
+    --teal:    #028090;
+    --teal-lt: #E0F0F3;
+    --gold:    #E8A838;
+    --gold-lt: #FBF3DB;
+    --green:   #3DAA4E;
+    --green-lt:#DDECD8;
+    --red:     #D94F4F;
+    --red-lt:  #FFE2DD;
+    --yellow:  #F5A623;
+    --yellow-lt:#FFF3D6;
+    --bg:      #F0F7F8;
+    --white:   #FFFFFF;
+    --text:    #1A2E33;
+    --muted:   #6B8A90;
+    --border:  #C8DDE1;
+    --radius:  10px;
+  }
+
+  body {
+    font-family: -apple-system, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Nav ── */
+  nav {
+    background: var(--dark);
+    padding: 0 28px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .nav-logo {
+    font-size: 15px; font-weight: 700; color: #fff;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-logo-sub { font-size: 11px; color: #7EB8C4; font-weight: 400; }
+  .nav-teacher {
+    font-size: 13px; color: #A8D4DA;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: #028090; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+
+  /* ── Concept banner ── */
+  .concept-bar {
+    background: var(--gold-lt);
+    border-bottom: 1px solid #F0D98C;
+    padding: 7px 28px;
+    font-size: 12px; color: #8B6A1B;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ── Main ── */
+  main {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 36px 24px 60px;
+  }
+
+  /* ── Screens ── */
+  .screen {
+    display: none;
+    width: 100%;
+    max-width: 700px;
+    animation: fadeUp 0.25s ease;
+  }
+  .screen.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Progress dots ── */
+  .progress {
+    display: flex; align-items: center; gap: 6px;
+    justify-content: center; margin-bottom: 28px;
+  }
+  .prog-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border); transition: background 0.2s;
+  }
+  .prog-dot.done    { background: var(--green); }
+  .prog-dot.active  { background: var(--teal); width: 22px; border-radius: 4px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .card-header {
+    background: var(--dark); color: #fff;
+    padding: 18px 24px;
+  }
+  .card-header-sub {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: #7EB8C4; margin-bottom: 4px;
+  }
+  .card-header-title { font-size: 20px; font-weight: 700; }
+  .card-header-meta  { font-size: 13px; color: #A8D4DA; margin-top: 4px; }
+  .card-body { padding: 24px; }
+
+  /* ── Lesson complete screen ── */
+  .complete-wrap {
+    text-align: center; padding: 40px 24px 32px;
+  }
+  .complete-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: var(--green-lt); margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+  }
+  .complete-title { font-size: 22px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+  .complete-sub   { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+
+  .lesson-details {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-align: left;
+    margin-bottom: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 24px;
+  }
+  .ld-row { display: flex; flex-direction: column; gap: 2px; }
+  .ld-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+  .ld-value { font-size: 14px; font-weight: 600; color: var(--text); }
+
+  .step-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--teal-lt); color: var(--teal);
+    border-radius: 4px; padding: 3px 10px; font-size: 12px; font-weight: 600;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border: none; border-radius: 7px; cursor: pointer;
+    font-family: inherit; font-weight: 600; transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:hover  { opacity: 0.9; }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: var(--teal); color: #fff;
+    padding: 12px 24px; font-size: 14px; width: 100%;
+  }
+  .btn-secondary {
+    background: var(--white); color: var(--teal);
+    border: 1.5px solid var(--teal);
+    padding: 10px 20px; font-size: 13px;
+  }
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 10px 18px; font-size: 13px;
+  }
+  .btn-selected {
+    background: var(--teal); color: #fff;
+    padding: 10px 18px; font-size: 13px;
+  }
+
+  /* ── Class results screen ── */
+  .score-hero {
+    display: flex; align-items: center; gap: 24px;
+    padding: 24px; border-bottom: 1px solid #F0F0EE;
+  }
+  .score-ring {
+    position: relative; width: 110px; height: 110px; flex-shrink: 0;
+  }
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-ring-label {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    line-height: 1.2;
+  }
+  .score-pct  { font-size: 24px; font-weight: 800; color: var(--dark); }
+  .score-word { font-size: 10px; color: var(--muted); }
+  .score-text h3 { font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+  .score-text p  { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .score-stat { font-size: 13px; margin-top: 8px; }
+  .score-stat strong { color: var(--red); }
+
+  /* Student dot grid */
+  .dot-grid-wrap { padding: 20px 24px; border-bottom: 1px solid #F0F0EE; }
+  .dot-grid-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 14px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+  .legend-dot  { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .s-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9.5px; font-weight: 700; color: #fff;
+    cursor: pointer; transition: transform 0.1s;
+    position: relative;
+  }
+  .s-dot:hover { transform: scale(1.15); }
+  .s-dot.green  { background: var(--green); }
+  .s-dot.yellow { background: var(--yellow); }
+  .s-dot.red    { background: var(--red); }
+  .s-dot .dot-tip {
+    display: none; position: absolute; bottom: 34px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--dark); color: #fff;
+    border-radius: 5px; padding: 5px 9px;
+    font-size: 11px; font-weight: 500; white-space: nowrap;
+    z-index: 10; pointer-events: none;
+  }
+  .s-dot:hover .dot-tip { display: block; }
+
+  .support-callout {
+    margin: 20px 24px;
+    background: var(--red-lt); border: 1.5px solid #F5B8B8;
+    border-radius: 8px; padding: 14px 18px;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  }
+  .support-callout-text { font-size: 14px; color: #7A2020; }
+  .support-callout-text strong { font-weight: 700; }
+
+  /* ── Students list screen ── */
+  .student-row {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 24px; border-bottom: 1px solid #F5F4F2;
+  }
+  .student-row:last-child { border-bottom: none; }
+  .stu-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .stu-name  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .stu-response {
+    font-size: 13px; color: #5A5A57; font-style: italic; line-height: 1.5;
+    background: #FAFAF8; border-left: 3px solid var(--border);
+    padding: 6px 10px; border-radius: 0 4px 4px 0; margin-top: 4px;
+  }
+  .stu-level {
+    display: inline-block; font-size: 10.5px; font-weight: 600;
+    padding: 2px 8px; border-radius: 3px; margin-top: 2px;
+  }
+  .level-red    { background: var(--red-lt);    color: #9B2020; }
+  .level-yellow { background: var(--yellow-lt); color: #8B5A0A; }
+
+  .ai-insight-bar {
+    background: linear-gradient(135deg, #EEF7F9 0%, var(--gold-lt) 100%);
+    border: 1.5px solid var(--teal);
+    border-radius: 8px; padding: 14px 18px;
+    margin: 0 0 16px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .ai-icon { font-size: 20px; flex-shrink: 0; }
+  .ai-insight-text { font-size: 13.5px; color: var(--text); line-height: 1.6; }
+  .ai-insight-text strong { font-weight: 600; color: var(--dark); }
+
+  /* ── AI recommendation screen ── */
+  .ai-analysis-card {
+    background: linear-gradient(135deg, var(--dark) 0%, #0D3540 100%);
+    color: #fff; border-radius: var(--radius);
+    padding: 20px 24px; margin-bottom: 16px;
+  }
+  .ai-card-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .ai-card-icon { font-size: 22px; }
+  .ai-card-title { font-size: 15px; font-weight: 700; color: #fff; }
+  .ai-card-sub   { font-size: 11px; color: #7EB8C4; }
+  .ai-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .ai-tag {
+    background: rgba(255,255,255,0.12); color: #fff;
+    border-radius: 4px; padding: 3px 10px; font-size: 11.5px; font-weight: 500;
+  }
+  .ai-tag.gold { background: rgba(232,168,56,0.25); color: #F5C96A; }
+  .ai-finding {
+    background: rgba(255,255,255,0.08);
+    border-radius: 6px; padding: 12px 14px;
+    font-size: 13px; color: #C8E8EE; line-height: 1.6;
+  }
+  .ai-finding strong { color: #fff; }
+
+  /* Intervention cards */
+  .intervention-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .int-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 16px 20px;
+    cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .int-card:hover { border-color: var(--teal); box-shadow: 0 2px 10px rgba(2,128,144,0.1); }
+  .int-card.selected { border-color: var(--teal); background: var(--teal-lt); }
+  .int-card.ai-recommended { border-color: var(--gold); }
+  .int-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+  .int-body { flex: 1; }
+  .int-header-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+  .int-title { font-size: 15px; font-weight: 700; color: var(--dark); }
+  .int-badge {
+    font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 3px;
+  }
+  .badge-ai    { background: var(--gold-lt); color: #8B6A1B; }
+  .badge-rank2 { background: #F0F0ED; color: #787774; }
+  .badge-rank3 { background: #F0F0ED; color: #787774; }
+  .int-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .int-what { font-size: 12.5px; color: var(--text); margin-top: 6px; font-style: italic; }
+
+  /* ── Resource detail screen ── */
+  .resource-header {
+    background: var(--dark); color: #fff;
+    padding: 20px 24px; border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .resource-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: #7EB8C4; margin-bottom: 4px; }
+  .resource-title   { font-size: 20px; font-weight: 700; }
+  .resource-body    { background: var(--white); padding: 24px; border-radius: 0 0 var(--radius) var(--radius); border: 1px solid var(--border); border-top: none; margin-bottom: 16px; }
+  .resource-students { margin-bottom: 20px; }
+  .rs-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+  .rs-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rs-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--red-lt); border-radius: 20px;
+    padding: 4px 10px 4px 6px; font-size: 12.5px; font-weight: 500; color: #7A2020;
+  }
+  .rs-chip .chip-dot {
+    width: 16px; height: 16px; border-radius: 50%; background: var(--red);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px; color: #fff; font-weight: 700;
+  }
+  .rs-chip.yellow-chip { background: var(--yellow-lt); color: #7A4A0A; }
+  .rs-chip.yellow-chip .chip-dot { background: var(--yellow); }
+
+  .resource-plan { background: var(--bg); border-radius: 8px; padding: 16px 18px; margin-bottom: 16px; }
+  .rp-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 10px; }
+  .rp-step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
+  .rp-step:last-child { margin-bottom: 0; }
+  .rp-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--teal); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+  }
+  .rp-text { font-size: 13.5px; color: var(--text); line-height: 1.5; }
+  .rp-text strong { font-weight: 600; }
+
+  .resource-card {
+    border: 1.5px solid var(--border); border-radius: 8px;
+    overflow: hidden; margin-bottom: 16px;
+  }
+  .rc-preview {
+    background: linear-gradient(135deg, var(--dark), var(--teal));
+    height: 90px; display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+  }
+  .rc-info { padding: 12px 16px; }
+  .rc-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .rc-meta  { font-size: 12px; color: var(--muted); }
+
+  .action-row { display: flex; gap: 10px; }
+
+  /* ── Section labels ── */
+  .screen-label {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.7px;
+    color: var(--muted); margin-bottom: 8px; font-weight: 600;
+  }
+  .screen-title {
+    font-size: 22px; font-weight: 800; color: var(--dark);
+    margin-bottom: 4px; letter-spacing: -0.3px;
+  }
+  .screen-sub {
+    font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.5;
+  }
+
+  /* ── Divider ── */
+  hr { border: none; border-top: 1px solid #E8E8E6; margin: 20px 0; }
+
+  /* ── Logged state ── */
+  .logged-wrap { text-align: center; padding: 40px 24px; }
+  .logged-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: var(--teal-lt); margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+  }
+  .logged-title { font-size: 22px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+  .logged-sub   { font-size: 14px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
+  .logged-summary {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 20px; text-align: left; margin-bottom: 24px;
+  }
+  .ls-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; border-bottom: 1px solid #EEE; }
+  .ls-row:last-child { border-bottom: none; }
+  .ls-label { color: var(--muted); }
+  .ls-value { font-weight: 600; color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">
+    CharacterStrong
+    <span class="nav-logo-sub">PurposeFull People</span>
+  </div>
+  <div class="nav-teacher">
+    <div class="nav-avatar">SM</div>
+    Ms. Meyer · Grade 3
+  </div>
+</nav>
+
+<!-- Concept banner -->
+<div class="concept-bar">
+  ⚠️ <strong>Concept prototype only</strong> — not current CharacterStrong functionality. Built to test a design hypothesis with teachers.
+</div>
+
+<main>
+
+  <!-- ─────────────────────────────────────────────
+       SCREEN 1: Lesson Complete
+  ───────────────────────────────────────────── -->
+  <div class="screen active" id="s1">
+
+    <div class="progress">
+      <div class="prog-dot active"></div>
+      <div class="prog-dot"></div>
+      <div class="prog-dot"></div>
+      <div class="prog-dot"></div>
+      <div class="prog-dot"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="complete-wrap">
+          <div class="complete-icon">✅</div>
+          <div class="complete-title">Lesson Complete</div>
+          <div class="complete-sub">You just finished the RESPOND step. Here's a quick look at how your class did.</div>
+
+          <div class="lesson-details">
+            <div class="ld-row">
+              <span class="ld-label">Curriculum Domain</span>
+              <span class="ld-value">🔷 Be Strong</span>
+            </div>
+            <div class="ld-row">
+              <span class="ld-label">Week</span>
+              <span class="ld-value">Week 11 of 36</span>
+            </div>
+            <div class="ld-row">
+              <span class="ld-label">Skill</span>
+              <span class="ld-value">Managing Distractions</span>
+            </div>
+            <div class="ld-row">
+              <span class="ld-label">Class</span>
+              <span class="ld-value">Period 1 · 23 students</span>
+            </div>
+            <div class="ld-row" style="grid-column:1/-1;">
+              <span class="ld-label">Step Just Completed</span>
+              <span class="ld-value" style="margin-top:4px;">
+                <span class="step-badge">RESPOND · Exit ticket</span>
+              </span>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="go(2)">
+            See how your class did &nbsp;→
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─────────────────────────────────────────────
+       SCREEN 2: Class Results
+  ───────────────────────────────────────────── -->
+  <div class="screen" id="s2">
+
+    <div class="progress">
+      <div class="prog-dot done"></div>
+      <div class="prog-dot active"></div>
+      <div class="prog-dot"></div>
+      <div class="prog-dot"></div>
+      <div class="prog-dot"></div>
+    </div>
+
+    <div class="screen-label">Class Results</div>
+    <div class="screen-title">Managing Distractions — Week 11</div>
+    <div class="screen-sub">Exit ticket responses from 23 students in Period 1.</div>
+
+    <div class="card">
+
+      <!-- Score hero -->
+      <div class="score-hero">
+        <div class="score-ring">
+          <svg width="110" height="110" viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="44" fill="none" stroke="#E8E8E6" stroke-width="10"/>
+            <circle cx="55" cy="55" r="44" fill="none" stroke="#3DAA4E" stroke-width="10"
+              stroke-dasharray="276.46" stroke-dashoffset="83" stroke-linecap="round"/>
+          </svg>
+          <div class="score-ring-label">
+            <div class="score-pct">70%</div>
+            <div class="score-word">class</div>
+          </div>
+        </div>
+        <div class="score-text">
+          <h3>16 of 23 students showing understanding</h3>
+          <p>Students rated their ability to use a strategy when distracted.</p>
+          <div class="score-stat"><strong>7 students</strong> may benefit from additional support before moving on.</div>
+        </div>
+      </div>
+
+      <!-- Dot grid -->
+      <div class="dot-grid-wrap">
+        <div class="dot-grid-label">
+          Every student in Period 1
+          <span class="legend-item"><span class="legend-dot" style="background:var(--green);"></span> Got it (16)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--yellow);"></span> Partial (4)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--red);"></span> Needs support (3)</span>
+        </div>
+        <div class="dot-grid" id="dotGrid"></div>
+      </div>
+
+      <!-- Support callout -->
+      <div class="support-callout">
+        <div class="support-callout-text">
+          <strong>7 students</strong> may need a different approach before you move on to Week 12.
+        </div>
+        <button class="btn btn-secondary" onclick="go(3)" style="white-space:nowrap;">See who →</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ─────────────────────────────────────────────
+       SCREEN 3: Students Needing Support
+  ───────────────────────────────────────────── -->
+  <div class="screen" id="s3">
+
+    <div class="progress">
+      <div class="prog-dot done"></div>
+      <div class="prog-dot done"></div>
+      <div class="prog-dot active"></div>
+      <div class="prog-dot"></div>
+      <div class="prog-dot"></div>
+    </div>
+
+    <div class="screen-label">Students Who May Need Support</div>
+    <div class="screen-title">7 students flagged</div>
+    <div class="screen-sub">Based on their exit ticket responses to: <em>"How well can you use a strategy to stay on task when you're distracted?"</em></div>
+
+    <div class="ai-insight-bar">
+      <div class="ai-icon">✨</div>
+      <div class="ai-insight-text">
+        <strong>CharacterStrong has analyzed these responses.</strong> A pattern emerged across 6 of 7 students: they can name the problem, but don't have an internalized strategy to apply independently. <a href="#" onclick="go(4); return false;" style="color:var(--teal); font-weight:600;">See the recommendation →</a>
+      </div>
+    </div>
+
+    <div class="card">
+
+      <!-- Red students -->
+      <div style="padding:12px 24px 4px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--red);">
+        Clearly struggling (3)
+      </div>
+      <div class="student-row">
+        <div class="stu-avatar" style="background:#D94F4F;">JT</div>
+        <div style="flex:1;">
+          <div class="stu-name">Jordan T.</div>
+          <span class="stu-level level-red">Needs support</span>
+          <div class="stu-response">"I don't really have strategies. I just try to ignore distractions but it never works."</div>
+        </div>
+      </div>
+      <div class="student-row">
+        <div class="stu-avatar" style="background:#D94F4F;">AM</div>
+        <div style="flex:1;">
+          <div class="stu-name">Aaliyah M.</div>
+          <span class="stu-level level-red">Needs support</span>
+          <div class="stu-response">"I forget what to do when I get distracted. My brain just goes somewhere else."</div>
+        </div>
+      </div>
+      <div class="student-row">
+        <div class="stu-avatar" style="background:#D94F4F;">SL</div>
+        <div style="flex:1;">
+          <div class="stu-name">Sofia L.</div>
+          <span class="stu-level level-red">Needs support</span>
+          <div class="stu-response">"I know I should focus but I don't know HOW to make myself do it."</div>
+        </div>
+      </div>
+
+      <!-- Yellow students -->
+      <div style="padding:12px 24px 4px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--yellow);">
+        Borderline — getting it sometimes (4)
+      </div>
+      <div class="student-row">
+        <div class="stu-avatar" style="background:#F5A623;">MR</div>
+        <div style="flex:1;">
+          <div class="stu-name">Marcus R.</div>
+          <span class="stu-level level-yellow">Partial</span>
+          <div class="stu-response">"It works at school sometimes but at home I can never focus."</div>
+        </div>
+      </div>
+      <div class="student-row">
+        <div class="stu-avatar" style="background:#F5A623;">PK</div>
+        <div style="flex:1;">
+          <div class="stu-name">Priya K.</div>
+          <span class="stu-level level-yellow">Partial</span>
+          <div class="stu-response">"I try the strategies but I forget them by the next day."</div>
+        </div>
+      </div>
+      <div class="student-row">
+        <div class="stu-avatar" style="background:#F5A623;">EB</div>
+        <div style="flex:1;">
+          <div class="stu-name">Elijah B.</div>
+          <span class="stu-level level-yellow">Partial</span>
+          <div class="stu-response">"I get it during the lesson but then I can't remember what to do."</div>
+        </div>
+      </div>
+      <div class="student-row">
+        <div class="stu-avatar" style="background:#F5A623;">DW</div>
+        <div style="flex:1;">
+          <div class="stu-name">Darius W.</div>
+          <span class="stu-level level-yellow">Partial</span>
+          <div class="stu-response">"Sometimes I can stay on task but when something interrupts me I lose it."</div>
+        </div>
+      </div>
+
+      <div style="padding:20px 24px;">
+        <button class="btn btn-primary" onclick="go(4)">See what CS recommends →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────
+       SCREEN 4: AI Recommendation
+  ───────────────────────────────────────────── -->
+  <div class="screen" id="s4">
+
+    <div class="progress">
+      <div class="prog-dot done"></div>
+      <div class="prog-dot done"></div>
+      <div class="prog-dot done"></div>
+      <div class="prog-dot active"></div>
+      <div class="prog-dot"></div>
+    </div>
+
+    <div class="screen-label">CharacterStrong Recommendation</div>
+    <div class="screen-title">What to do next for these 7 students</div>
+    <div class="screen-sub">Based on the skill type, grade level, and what students actually said.</div>
+
+    <!-- AI analysis card -->
+    <div class="ai-analysis-card">
+      <div class="ai-card-header">
+        <div class="ai-card-icon">🔷</div>
+        <div>
+          <div class="ai-card-title">CharacterStrong Skill Analysis</div>
+          <div class="ai-card-sub">Managing Distractions · Be Strong · Grade 3</div>
+        </div>
+      </div>
+      <div class="ai-tags">
+        <span class="ai-tag">Executive functioning</span>
+        <span class="ai-tag">Self-regulation</span>
+        <span class="ai-tag">Attention management</span>
+        <span class="ai-tag gold">⭐ Strategy retention gap</span>
+      </div>
+      <div class="ai-finding">
+        <strong>Pattern detected:</strong> 6 of 7 students can name what distraction feels like — but don't have an internalized, repeatable strategy to apply in the moment. This is a <strong>strategy retention gap</strong>, not a concept gap. Re-explaining the concept won't help. What works for this skill type at Grade 3: a <strong>physical, visible anchor</strong> they can reference independently — not more instruction.
+        <br><br>
+        <strong>Note on Marcus R.:</strong> His struggle is context-specific (home vs. school), suggesting an environmental factor. A brief individual conversation may be more useful than a whole-group reteach for him.
+      </div>
+    </div>
+
+    <div style="font-size:11.5px; color:var(--muted); margin-bottom:16px; display:flex; align-items:center; gap:5px;">
+      ✨ <em>Recommendations powered by AI — informed by skill type, grade level, and student responses</em>
+    </div>
+
+    <!-- Intervention cards -->
+    <div style="font-size:13px; color:var(--muted); margin-bottom:10px;">Choose how you want to support these students:</div>
+    <div class="intervention-cards">
+
+      <div class="int-card ai-recommended" id="int1" onclick="selectInt(1)">
+        <div class="int-icon">🗺️</div>
+        <div class="int-body">
+          <div class="int-header-row">
+            <div class="int-title">Try a Different Approach</div>
+            <span class="int-badge badge-ai">⭐ CharacterStrong Top Pick</span>
+          </div>
+          <div class="int-desc">Reteach the skill using a physical strategy anchor — a pocket-sized card students keep at their desk with 3 specific steps to take when they feel distracted.</div>
+          <div class="int-what">→ Matches what these students need: a concrete "what to do" they can use independently without remembering the lesson.</div>
+        </div>
+      </div>
+
+      <div class="int-card" id="int2" onclick="selectInt(2)">
+        <div class="int-icon">📝</div>
+        <div class="int-body">
+          <div class="int-header-row">
+            <div class="int-title">Give an Extra Activity</div>
+            <span class="int-badge badge-rank2">Option 2</span>
+          </div>
+          <div class="int-desc">Assign a short independent practice activity: students fill in their own "distraction plan" — what their top distraction is and the one strategy they'll try first.</div>
+          <div class="int-what">→ Good for students who have some understanding but need to personalize it. Best follow-up after the strategy anchor.</div>
+        </div>
+      </div>
+
+      <div class="int-card" id="int3" onclick="selectInt(3)">
+        <div class="int-icon">🎬</div>
+        <div class="int-body">
+          <div class="int-header-row">
+            <div class="int-title">Watch a Video</div>
+            <span class="int-badge badge-rank3">Option 3</span>
+          </div>
+          <div class="int-desc">A 3-minute animated video showing a student using the "Name it → Notice it → Reset" strategy in a real classroom moment. Good for visual learners.</div>
+          <div class="int-what">→ Most effective for students who are still at the concept stage. May be too basic for the 4 borderline students who already understand the concept.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <button class="btn btn-primary" id="chooseBtn" onclick="goToResource()" style="opacity:0.4; cursor:not-allowed;" disabled>
+      Choose an approach to see the resource →
+    </button>
+
+  </div>
+
+  <!-- ─────────────────────────────────────────────
+       SCREEN 5A: Resource — Different Approach
+  ───────────────────────────────────────────── -->
+  <div class="screen" id="s5a">
+    <div class="progress">
+      <div class="prog-dot done"></div>
+      <div class="prog-dot done"></div>
+      <div class="prog-dot done"></div>
+      <div class="prog-dot done"></div>
+      <div class="prog-dot active"></div>
+    </div>
+
+    <div class="resource-header">
+      <div class="resource-eyebrow">⭐ CharacterStrong Top Pick · Try a Different Approach</div>
+      <div class="resource-title">Strategy Anchor Card — Managing Distractions</div>
+    </div>
+    <div class="resource-body">
+
+      <div class="resource-students">
+        <div class="rs-label">Use with these 7 students</div>
+        <div class="rs-chips">
+          <div class="rs-chip"><span class="chip-dot">JT</span> Jordan T.</div>
+          <div class="rs-chip"><span class="chip-dot">AM</span> Aaliyah M.</div>
+          <div class="rs-chip"><span class="chip-dot">SL</span> Sofia L.</div>
+          <div class="rs-chip yellow-chip"><span class="chip-dot">PK</span> Priya K.</div>
+          <div class="rs-chip yellow-chip"><span class="chip-dot">EB</span> Elijah B.</div>
+          <div class="rs-chip yellow-chip"><span class="chip-dot">DW</span> Darius W.</div>
+          <div class="rs-chip yellow-chip"><span class="chip-dot">MR</span> Marcus R.</div>
+        </div>
+      </div>
+
+      <div class="resource-plan">
+        <div class="rp-label">How to use this (10 min, any time this week)</div>
+        <div class="rp-step">
+          <div class="rp-num">1</div>
+          <div class="rp-text"><strong>Pull these 7 students</strong> for a brief small-group moment — during transition, morning meeting, or start of CharacterStrong time.</div>
+        </div>
+        <div class="rp-step">
+          <div class="rp-num">2</div>
+          <div class="rp-text"><strong>Give each student a Strategy Anchor Card.</strong> Walk through the 3 steps: Name the distraction → Notice where it's coming from → Reset with one strategy (deep breath, move to a quieter spot, or write it down and come back).</div>
+        </div>
+        <div class="rp-step">
+          <div class="rp-num">3</div>
+          <div class="rp-text"><strong>Have each student pick their #1 strategy</strong> and write it on their card. They keep it at their desk.</div>
+        </div>
+        <div class="rp-step">
+          <div class="rp-num">4</div>
+          <div class="rp-text"><strong>For Marcus R.:</strong> Brief 1:1 check-in — his challenge is home, not school. Ask what makes home harder. No fix needed — just acknowledgment and one idea he can try.</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-preview">🗺️</div>
+        <div class="rc-info">
+          <div class="rc-title">Strategy Anchor Card — Managing Distractions (Grade 3)</div>
+          <div class="rc-meta">PDF · 1 page · Print-ready · CharacterStrong Be Strong Unit 3</div>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-primary" style="flex:1;" onclick="go(6)">Log this and move to Week 12 ✓</button>
+        <button class="btn btn-ghost" onclick="go(4)">← Back</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────
+       SCREEN 5B: Resource — Extra Activity
+  ───────────────────────────────────────────── -->
+  <div class="screen" id="s5b">
+    <div class="progress">
+      <div class="prog-dot done"></div><div class="prog-dot done"></div>
+      <div class="prog-dot done"></div><div class="prog-dot done"></div>
+      <div class="prog-dot active"></div>
+    </div>
+
+    <div class="resource-header">
+      <div class="resource-eyebrow">Option 2 · Extra Activity</div>
+      <div class="resource-title">My Distraction Plan — Independent Practice</div>
+    </div>
+    <div class="resource-body">
+      <div class="resource-students">
+        <div class="rs-label">Best for these 4 students (borderline)</div>
+        <div class="rs-chips">
+          <div class="rs-chip yellow-chip"><span class="chip-dot">PK</span> Priya K.</div>
+          <div class="rs-chip yellow-chip"><span class="chip-dot">EB</span> Elijah B.</div>
+          <div class="rs-chip yellow-chip"><span class="chip-dot">DW</span> Darius W.</div>
+          <div class="rs-chip yellow-chip"><span class="chip-dot">MR</span> Marcus R.</div>
+        </div>
+      </div>
+      <div style="font-size:13px; color:var(--muted); margin-bottom:16px; background:var(--yellow-lt); border-radius:8px; padding:12px 14px;">
+        ⚠️ <strong>CharacterStrong note:</strong> For Jordan T., Aaliyah M., and Sofia L. (clearly struggling), this activity may be too advanced right now. Consider pairing with the Strategy Anchor Card first.
+      </div>
+      <div class="resource-plan">
+        <div class="rp-label">How to use this (15 min, independent work)</div>
+        <div class="rp-step">
+          <div class="rp-num">1</div>
+          <div class="rp-text"><strong>Assign during morning work or independent time.</strong> Students complete a one-page reflection: "What is my biggest distraction?" and "Which strategy will I try first?"</div>
+        </div>
+        <div class="rp-step">
+          <div class="rp-num">2</div>
+          <div class="rp-text"><strong>Students set a personal goal</strong> for the week — one specific moment when they'll try their strategy.</div>
+        </div>
+        <div class="rp-step">
+          <div class="rp-num">3</div>
+          <div class="rp-text"><strong>Follow up on Friday</strong> with a quick share: did they try it? What happened?</div>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="rc-preview">📝</div>
+        <div class="rc-info">
+          <div class="rc-title">My Distraction Plan — Grade 3 Practice Sheet</div>
+          <div class="rc-meta">PDF · 1 page · Student-facing · CharacterStrong Be Strong Unit 3</div>
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-primary" style="flex:1;" onclick="go(6)">Log this and move to Week 12 ✓</button>
+        <button class="btn btn-ghost" onclick="go(4)">← Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────
+       SCREEN 5C: Resource — Video
+  ───────────────────────────────────────────── -->
+  <div class="screen" id="s5c">
+    <div class="progress">
+      <div class="prog-dot done"></div><div class="prog-dot done"></div>
+      <div class="prog-dot done"></div><div class="prog-dot done"></div>
+      <div class="prog-dot active"></div>
+    </div>
+
+    <div class="resource-header">
+      <div class="resource-eyebrow">Option 3 · Video</div>
+      <div class="resource-title">How Your Brain Handles Distractions</div>
+    </div>
+    <div class="resource-body">
+      <div class="resource-students">
+        <div class="rs-label">Show to all 7 students</div>
+        <div class="rs-chips">
+          <div class="rs-chip"><span class="chip-dot">JT</span> Jordan T.</div>
+          <div class="rs-chip"><span class="chip-dot">AM</span> Aaliyah M.</div>
+          <div class="rs-chip"><span class="chip-dot">SL</span> Sofia L.</div>
+          <div class="rs-chip yellow-chip"><span class="chip-dot">PK</span> Priya K.</div>
+          <div class="rs-chip yellow-chip"><span class="chip-dot">EB</span> Elijah B.</div>
+          <div class="rs-chip yellow-chip"><span class="chip-dot">DW</span> Darius W.</div>
+          <div class="rs-chip yellow-chip"><span class="chip-dot">MR</span> Marcus R.</div>
+        </div>
+      </div>
+      <div style="font-size:13px; color:var(--muted); margin-bottom:16px; background:var(--yellow-lt); border-radius:8px; padding:12px 14px;">
+        ⚠️ <strong>CharacterStrong note:</strong> Video works best as reinforcement, not the primary intervention. Most of these students already understand the concept — they need practice tools, not re-explanation. Consider pairing with Option 1 after.
+      </div>
+      <div class="resource-plan">
+        <div class="rp-label">How to use this (5 min)</div>
+        <div class="rp-step">
+          <div class="rp-num">1</div>
+          <div class="rp-text"><strong>Show during CharacterStrong time or morning meeting.</strong> 3-minute animated video shows a student using the "Name it → Notice it → Reset" strategy in a real moment.</div>
+        </div>
+        <div class="rp-step">
+          <div class="rp-num">2</div>
+          <div class="rp-text"><strong>Pause at 1:45</strong> and ask: "What strategy did she use?" — quick partner share.</div>
+        </div>
+        <div class="rp-step">
+          <div class="rp-num">3</div>
+          <div class="rp-text"><strong>After video:</strong> Students write or say one strategy they could try this week.</div>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="rc-preview">🎬</div>
+        <div class="rc-info">
+          <div class="rc-title">"How Your Brain Handles Distractions" — Animated (3 min)</div>
+          <div class="rc-meta">Video · Grade 2–4 · CharacterStrong Be Strong series</div>
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-primary" style="flex:1;" onclick="go(6)">Log this and move to Week 12 ✓</button>
+        <button class="btn btn-ghost" onclick="go(4)">← Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────
+       SCREEN 6: Logged
+  ───────────────────────────────────────────── -->
+  <div class="screen" id="s6">
+    <div class="progress">
+      <div class="prog-dot done"></div>
+      <div class="prog-dot done"></div>
+      <div class="prog-dot done"></div>
+      <div class="prog-dot done"></div>
+      <div class="prog-dot done"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="logged-wrap">
+          <div class="logged-icon">🎯</div>
+          <div class="logged-title">Logged. Nice work.</div>
+          <div class="logged-sub">Your instructional response has been recorded. These 7 students will be flagged for a follow-up check-in next week before you move to Week 13.</div>
+
+          <div class="logged-summary">
+            <div class="ls-row"><span class="ls-label">Lesson</span><span class="ls-value">Managing Distractions · Week 11</span></div>
+            <div class="ls-row"><span class="ls-label">Students supported</span><span class="ls-value">7 of 23</span></div>
+            <div class="ls-row" id="loggedAction"><span class="ls-label">Intervention chosen</span><span class="ls-value">—</span></div>
+            <div class="ls-row"><span class="ls-label">Follow-up check-in</span><span class="ls-value">Before Week 13 · Auto-scheduled</span></div>
+          </div>
+
+          <button class="btn btn-primary" onclick="restart()">← Back to lesson view</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // Build dot grid
+  (function() {
+    const grid = document.getElementById('dotGrid');
+    const students = [
+      // 16 green
+      {i:'AL',c:'green',n:'Alex L.'},  {i:'BB',c:'green',n:'Bella B.'}, {i:'CM',c:'green',n:'Chris M.'},
+      {i:'DL',c:'green',n:'Dana L.'}, {i:'EW',c:'green',n:'Eva W.'},   {i:'FN',c:'green',n:'Felix N.'},
+      {i:'GR',c:'green',n:'Grace R.'},{i:'HR',c:'green',n:'Henry R.'}, {i:'IK',c:'green',n:'Isla K.'},
+      {i:'JB',c:'green',n:'Jake B.'}, {i:'KS',c:'green',n:'Kai S.'},   {i:'LM',c:'green',n:'Lily M.'},
+      {i:'MG',c:'green',n:'Mia G.'},  {i:'NO',c:'green',n:'Noah O.'},  {i:'OT',c:'green',n:'Olivia T.'},
+      {i:'PT',c:'green',n:'Peter T.'},
+      // 4 yellow
+      {i:'MR',c:'yellow',n:'Marcus R. — Partial'}, {i:'PK',c:'yellow',n:'Priya K. — Partial'},
+      {i:'EB',c:'yellow',n:'Elijah B. — Partial'}, {i:'DW',c:'yellow',n:'Darius W. — Partial'},
+      // 3 red
+      {i:'JT',c:'red',n:'Jordan T. — Needs support'},
+      {i:'AM',c:'red',n:'Aaliyah M. — Needs support'},
+      {i:'SL',c:'red',n:'Sofia L. — Needs support'},
+    ];
+    students.forEach(s => {
+      const d = document.createElement('div');
+      d.className = 's-dot ' + s.c;
+      d.textContent = s.i;
+      d.innerHTML = s.i + '<span class="dot-tip">' + s.n + '</span>';
+      grid.appendChild(d);
+    });
+  })();
+
+  // Screen navigation
+  let currentScreen = 1;
+  let selectedInt = 0;
+  let chosenLabel = '';
+
+  function go(n) {
+    document.getElementById('s' + currentScreen).classList.remove('active');
+    if (n === 5) {
+      // go to the right resource screen
+      if (selectedInt === 1) document.getElementById('s5a').classList.add('active');
+      else if (selectedInt === 2) document.getElementById('s5b').classList.add('active');
+      else document.getElementById('s5c').classList.add('active');
+    } else {
+      const el = document.getElementById('s' + n);
+      if (el) { el.classList.add('active'); currentScreen = n; }
+    }
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function selectInt(n) {
+    selectedInt = n;
+    ['int1','int2','int3'].forEach((id,i) => {
+      document.getElementById(id).classList.toggle('selected', i+1 === n);
+    });
+    const btn = document.getElementById('chooseBtn');
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    const labels = ['Strategy Anchor Card (Different Approach)', 'My Distraction Plan (Extra Activity)', 'How Your Brain Handles Distractions (Video)'];
+    chosenLabel = labels[n-1];
+    btn.textContent = 'Use: ' + labels[n-1] + ' →';
+  }
+
+  function goToResource() {
+    if (!selectedInt) return;
+    document.getElementById('s4').classList.remove('active');
+    const screens = {1:'s5a', 2:'s5b', 3:'s5c'};
+    document.getElementById(screens[selectedInt]).classList.add('active');
+    currentScreen = 5;
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function restart() {
+    // update log screen
+    document.getElementById('loggedAction').innerHTML =
+      '<span class="ls-label">Intervention chosen</span><span class="ls-value">' + (chosenLabel || 'Strategy Anchor Card') + '</span>';
+    // hide all screens
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('s1').classList.add('active');
+    currentScreen = 1;
+    selectedInt = 0;
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+</script>
+
+</body>
+</html>
