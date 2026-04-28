@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Discovery Synthesis — CharacterStrong</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Inter", "Segoe UI", sans-serif;
+    background: #F7F7F5;
+    color: #37352F;
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 40px 32px 80px;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  .breadcrumb {
+    font-size: 12px; color: #9B9A97; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .breadcrumb span { color: #37352F; }
+
+  .page-icon { font-size: 48px; margin-bottom: 8px; }
+  .page-title {
+    font-size: 36px; font-weight: 700; color: #37352F;
+    margin-bottom: 4px; letter-spacing: -0.5px;
+  }
+  .page-subtitle { font-size: 14px; color: #9B9A97; margin-bottom: 20px; }
+
+  .page-props {
+    display: flex; flex-direction: column; gap: 4px;
+    margin: 0 0 28px;
+  }
+  .prop-row {
+    display: flex; align-items: baseline; gap: 0;
+    font-size: 13px; padding: 3px 0;
+  }
+  .prop-label {
+    width: 160px; flex-shrink: 0;
+    color: #787774; font-size: 12.5px;
+  }
+  .prop-value { color: #37352F; }
+  .tag {
+    display: inline-block; border-radius: 4px;
+    padding: 1px 8px; font-size: 12px; font-weight: 500; line-height: 1.6;
+  }
+  .tag-yellow { background: #FBF3DB; color: #8B6A1B; }
+  .tag-green  { background: #DDECD8; color: #2E6B2E; }
+
+  .divider { height: 1px; background: #E9E9E7; margin: 24px 0; }
+
+  /* Callout */
+  .callout {
+    border-radius: 4px; padding: 14px 16px; margin-bottom: 24px;
+    display: flex; gap: 10px; font-size: 13px; line-height: 1.6;
+  }
+  .callout-blue  { background: #EEF3FB; }
+  .callout-yellow { background: #FBF6E8; }
+  .callout .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* Section headings */
+  .section-heading {
+    font-size: 18px; font-weight: 700; color: #37352F;
+    margin: 36px 0 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* Teacher cards - gallery style */
+  .teacher-gallery {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    margin-bottom: 6px;
+  }
+  .teacher-card {
+    background: white; border-radius: 6px;
+    border: 1px solid #E9E9E7; padding: 14px 12px;
+    font-size: 12.5px;
+  }
+  .teacher-emoji { font-size: 24px; margin-bottom: 8px; display: block; }
+  .teacher-name {
+    font-weight: 700; font-size: 13px; color: #37352F; margin-bottom: 2px;
+  }
+  .teacher-meta { font-size: 11.5px; color: #9B9A97; line-height: 1.5; margin-bottom: 8px; }
+  .persona-tag {
+    display: inline-block; border-radius: 3px;
+    padding: 2px 7px; font-size: 11px; font-weight: 500; line-height: 1.5;
+  }
+  .persona-power    { background: #D8EAF5; color: #1B5080; }
+  .persona-hesitant { background: #FDDEDE; color: #A83232; }
+  .persona-casual   { background: #E9E9E7; color: #5A5A57; }
+
+  .teacher-note {
+    font-size: 11.5px; color: #787774; line-height: 1.5; margin-top: 8px;
+    border-top: 1px solid #F1F1EF; padding-top: 8px; font-style: italic;
+  }
+
+  /* Toggle blocks */
+  .toggle-block {
+    margin-bottom: 4px;
+  }
+  .toggle-btn {
+    display: flex; align-items: flex-start; gap: 8px;
+    background: none; border: none; text-align: left;
+    width: 100%; cursor: pointer; padding: 4px 0;
+    font-family: inherit; font-size: 14px; color: #37352F;
+  }
+  .toggle-btn:hover .toggle-label { text-decoration: underline; }
+  .toggle-arrow {
+    font-size: 10px; color: #9B9A97; margin-top: 4px;
+    transition: transform 0.15s; flex-shrink: 0;
+  }
+  .toggle-arrow.open { transform: rotate(90deg); }
+  .toggle-label { font-weight: 500; line-height: 1.5; }
+  .toggle-body {
+    display: none; padding: 4px 0 8px 22px;
+  }
+  .toggle-body.open { display: block; }
+
+  /* Quote blocks */
+  .quote-list { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .quote-block {
+    border-left: 3px solid #E9E9E7; padding: 8px 14px;
+    font-size: 13px; color: #4A4A47; font-style: italic; line-height: 1.7;
+  }
+  .quote-attr {
+    font-size: 11.5px; color: #9B9A97; font-style: normal;
+    margin-top: 4px; display: flex; align-items: center; gap: 6px;
+  }
+  .quote-persona {
+    display: inline-block; border-radius: 3px;
+    padding: 1px 6px; font-size: 10.5px; font-weight: 500;
+  }
+
+  /* Recurring theme block — prominent */
+  .theme-block {
+    background: white; border-radius: 6px;
+    border: 1px solid #E9E9E7; overflow: hidden; margin-top: 8px;
+  }
+  .theme-block-header {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid #F1F1EF;
+  }
+  .theme-eyebrow {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: #787774; margin-bottom: 5px;
+  }
+  .theme-title {
+    font-size: 16px; font-weight: 700; color: #37352F; line-height: 1.4;
+  }
+  .theme-body { padding: 16px 20px; }
+  .theme-description {
+    font-size: 13.5px; color: #4A4A47; line-height: 1.75; margin-bottom: 18px;
+  }
+
+  /* Spectrum bar */
+  .spectrum-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: #9B9A97; margin-bottom: 10px;
+  }
+  .spectrum {
+    display: flex; gap: 0; border-radius: 6px; overflow: hidden; margin-bottom: 14px;
+  }
+  .spectrum-seg {
+    flex: 1; padding: 10px 12px; font-size: 12px; line-height: 1.45;
+  }
+  .spectrum-seg-label { font-weight: 700; margin-bottom: 2px; font-size: 11.5px; }
+  .spectrum-seg-desc { font-size: 11px; }
+  .seg-1 { background: #FDDEDE; color: #7A2020; }
+  .seg-2 { background: #FBF3DB; color: #7A5010; }
+  .seg-3 { background: #DDECD8; color: #1D5A2A; }
+
+  /* Finding callout */
+  .finding-callout {
+    background: #F7F6F3; border-left: 3px solid #37352F;
+    padding: 12px 16px; border-radius: 0 4px 4px 0;
+    font-size: 13.5px; color: #37352F; line-height: 1.7; margin-top: 16px;
+  }
+  .finding-callout strong { font-weight: 700; }
+
+  /* Implication */
+  .implication-block {
+    background: #F0F9F4; border: 1px solid #C8E6D4;
+    border-radius: 6px; padding: 16px 20px; margin-top: 8px;
+  }
+  .implication-eyebrow {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: #5A9070; margin-bottom: 6px;
+  }
+  .implication-text {
+    font-size: 13.5px; color: #2E5E3A; line-height: 1.75;
+  }
+
+  footer {
+    margin-top: 48px; font-size: 11.5px; color: #9B9A97;
+    border-top: 1px solid #E9E9E7; padding-top: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="breadcrumb">
+    📁 CharacterStrong Skills Assessment &nbsp;›&nbsp; Discovery &nbsp;›&nbsp;
+    <span>Teacher Interview Synthesis</span>
+  </div>
+
+  <div class="page-icon">🎙️</div>
+  <h1 class="page-title">Teacher Interview Synthesis</h1>
+  <div class="page-subtitle">What do teachers do when their assessment data tells them some students didn't get it?</div>
+
+  <div class="page-props">
+    <div class="prop-row">
+      <span class="prop-label">✏️ &nbsp;Prepared by</span>
+      <span class="prop-value">Mary Gurley</span>
+    </div>
+    <div class="prop-row">
+      <span class="prop-label">📅 &nbsp;Date</span>
+      <span class="prop-value">April 2026</span>
+    </div>
+    <div class="prop-row">
+      <span class="prop-label">🎤 &nbsp;Method</span>
+      <span class="prop-value">30-min structured interviews · 5 teachers</span>
+    </div>
+    <div class="prop-row">
+      <span class="prop-label">🏫 &nbsp;Participants</span>
+      <span class="prop-value">K–5 classroom teachers · All active CharacterStrong users</span>
+    </div>
+    <div class="prop-row">
+      <span class="prop-label">🏷️ &nbsp;Status</span>
+      <span class="prop-value"><span class="tag tag-yellow">In Progress</span></span>
+    </div>
+  </div>
+
+  <div class="callout callout-blue">
+    <span class="icon">💡</span>
+    <div><strong>Research question:</strong> When assessment data shows that some students didn't grasp a skill, how do teachers decide what to do next — reteach the same lesson, try a different approach, or escalate to Tier 2 support?</div>
+  </div>
+
+  <!-- Teachers -->
+  <div class="section-heading">👩‍🏫 Teachers Interviewed</div>
+
+  <div class="teacher-gallery">
+
+    <div class="teacher-card">
+      <span class="teacher-emoji">👨🏽‍🏫</span>
+      <div class="teacher-name">Mr. Ramirez</div>
+      <div class="teacher-meta">Grade 4 · Austin, TX<br>12 years · MTSS lead</div>
+      <span class="persona-tag persona-power">Power user</span>
+      <div class="teacher-note">Looks at his exit ticket data but still wrestles with what the right instructional response is — reteach the same way? Try another approach? He makes a call, but it's a judgment call, not an informed one.</div>
+    </div>
+
+    <div class="teacher-card">
+      <span class="teacher-emoji">👩🏻‍🏫</span>
+      <div class="teacher-name">Ms. Halloway</div>
+      <div class="teacher-meta">Grade 1 · Portland, OR<br>3 years · New to CS</div>
+      <span class="persona-tag persona-hesitant">Hesitant user</span>
+      <div class="teacher-note">Has looked at assessment results and genuinely doesn't know what to do with them. Doesn't know whether low scores mean reteach, differentiate, or refer — so she moves on by default.</div>
+    </div>
+
+    <div class="teacher-card">
+      <span class="teacher-emoji">👩🏾‍🏫</span>
+      <div class="teacher-name">Ms. Meyer</div>
+      <div class="teacher-meta">Grade 3 · Seattle, WA<br>8 years · Consistent user</div>
+      <span class="persona-tag persona-casual">Casual user</span>
+      <div class="teacher-note">Does exit tickets and looks at the results. Knows some kids didn't get it. But doesn't know if she should reteach, try it differently, or just trust that the next lesson will reinforce it — so she moves on.</div>
+    </div>
+
+    <div class="teacher-card">
+      <span class="teacher-emoji">👨🏿‍🏫</span>
+      <div class="teacher-name">Mr. Washington</div>
+      <div class="teacher-meta">Grade 5 · Denver, CO<br>15 years · Veteran user</div>
+      <span class="persona-tag persona-casual">Casual user</span>
+      <div class="teacher-note">Trusts the curriculum and follows the sequence. Has seen data showing students struggling but has no framework for translating that into an instructional decision — so he defaults to "the program knows best."</div>
+    </div>
+
+    <div class="teacher-card">
+      <span class="teacher-emoji">👩🏽‍🏫</span>
+      <div class="teacher-name">Ms. Patel</div>
+      <div class="teacher-meta">Kindergarten · Phoenix, AZ<br>7 years · Regular user</div>
+      <span class="persona-tag persona-casual">Casual user</span>
+      <div class="teacher-note">Collects informal check-in data (thumbs up/down, observations) but has no idea what instructional response it should trigger. Is it reteach? Small group? Tier 2? No one has ever told her.</div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Interview notes by teacher -->
+  <div class="section-heading">📋 Interview Notes</div>
+
+  <div class="callout callout-yellow">
+    <span class="icon">🔽</span>
+    <div>Click each teacher to expand their full interview notes.</div>
+  </div>
+
+  <!-- Mr. Ramirez -->
+  <div class="toggle-block">
+    <button class="toggle-btn" onclick="toggleBlock(this)">
+      <span class="toggle-arrow">▶</span>
+      <span class="toggle-label">Mr. Ramirez &nbsp;<span style="font-weight:400; color:#9B9A97;">Grade 4 · Power user</span></span>
+    </button>
+    <div class="toggle-body">
+      <div class="quote-list">
+        <div class="quote-block">
+          "I look at the exit tickets and I can see that maybe six kids really struggled. And then I have to decide — do I reteach the same lesson? Do I try to hit it a different way? Or do I just keep going and hope the next unit reinforces it? I honestly don't always know the right answer."
+          <div class="quote-attr"><span class="quote-persona persona-power">Power user</span> Mr. Ramirez, Grade 4</div>
+        </div>
+        <div class="quote-block">
+          "There's no guidance in the curriculum about what to do when kids don't get it. It's all forward momentum. Which is fine, but SEL skills build on each other. If a kid doesn't have self-awareness, the self-management lesson isn't going to land."
+          <div class="quote-attr"><span class="quote-persona persona-power">Power user</span> Mr. Ramirez, Grade 4</div>
+        </div>
+        <div class="quote-block">
+          "I've referred kids to Tier 2 support and the counselor asks me why. I can tell her — because I tracked it. But I still had to make that judgment call myself. There was nothing in the platform that told me to escalate. That shouldn't require a custom spreadsheet."
+          <div class="quote-attr"><span class="quote-persona persona-power">Power user</span> Mr. Ramirez, Grade 4</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ms. Halloway -->
+  <div class="toggle-block">
+    <button class="toggle-btn" onclick="toggleBlock(this)">
+      <span class="toggle-arrow">▶</span>
+      <span class="toggle-label">Ms. Halloway &nbsp;<span style="font-weight:400; color:#9B9A97;">Grade 1 · Hesitant user</span></span>
+    </button>
+    <div class="toggle-body">
+      <div class="quote-list">
+        <div class="quote-block">
+          "I looked at the results once and I could see some kids scored low. And I just thought — okay, now what? Do I do the lesson again? Do I try something different? I genuinely had no idea what I was supposed to do with that information."
+          <div class="quote-attr"><span class="quote-persona persona-hesitant">Hesitant user</span> Ms. Halloway, Grade 1</div>
+        </div>
+        <div class="quote-block">
+          "Nobody trained me on how to respond to SEL assessment data. In reading or math, I know what to do — I pull a small group, I try a different strategy. With this, I don't have that same toolkit. So I end up doing nothing."
+          <div class="quote-attr"><span class="quote-persona persona-hesitant">Hesitant user</span> Ms. Halloway, Grade 1</div>
+        </div>
+        <div class="quote-block">
+          "Even if I had the data perfectly laid out in front of me, I'm not sure I'd know what it was telling me to do. Is a low score on 'empathy' a reteach situation? A Tier 2 referral? A call home? I don't have a framework for that."
+          <div class="quote-attr"><span class="quote-persona persona-hesitant">Hesitant user</span> Ms. Halloway, Grade 1</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ms. Meyer -->
+  <div class="toggle-block">
+    <button class="toggle-btn" onclick="toggleBlock(this)">
+      <span class="toggle-arrow">▶</span>
+      <span class="toggle-label">Ms. Meyer &nbsp;<span style="font-weight:400; color:#9B9A97;">Grade 3 · Casual user</span></span>
+    </button>
+    <div class="toggle-body">
+      <div class="quote-list">
+        <div class="quote-block">
+          "I do exit tickets and I look at them. I can see that five kids struggled. But then I'm standing there thinking — do I reteach Thursday's lesson on Friday? Do I try a different activity? Do I just move on and hope next week's lesson picks it up? I don't know which of those is the right call."
+          <div class="quote-attr"><span class="quote-persona persona-casual">Casual user</span> Ms. Meyer, Grade 3</div>
+        </div>
+        <div class="quote-block">
+          "The data exists. I collected it. But collecting it and knowing what to do with it are two completely different things. There's no guidance about what an appropriate instructional response looks like. So I end up just moving on."
+          <div class="quote-attr"><span class="quote-persona persona-casual">Casual user</span> Ms. Meyer, Grade 3</div>
+        </div>
+        <div class="quote-block">
+          "If I had a magic wand? Something that just said — these three kids need you to try it a different way before you move on, here's how. I don't need a dashboard. I need someone to translate the data into an action."
+          <div class="quote-attr"><span class="quote-persona persona-casual">Casual user</span> Ms. Meyer, Grade 3</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mr. Washington -->
+  <div class="toggle-block">
+    <button class="toggle-btn" onclick="toggleBlock(this)">
+      <span class="toggle-arrow">▶</span>
+      <span class="toggle-label">Mr. Washington &nbsp;<span style="font-weight:400; color:#9B9A97;">Grade 5 · Casual user</span></span>
+    </button>
+    <div class="toggle-body">
+      <div class="quote-list">
+        <div class="quote-block">
+          "I can see when a lesson didn't land — kids are checking out, the discussion goes flat. But what do I do with that? Do I go back and try the same lesson again? Find a different activity? I've never been taught how to respond to that in SEL the way I have in reading."
+          <div class="quote-attr"><span class="quote-persona persona-casual">Casual user</span> Mr. Washington, Grade 5</div>
+        </div>
+        <div class="quote-block">
+          "In ELA, if kids don't get a concept, I have a whole toolkit — small group, different text, graphic organizer. With SEL I don't have that toolkit. I don't know what 'differentiated instruction' even looks like for a skill like self-regulation."
+          <div class="quote-attr"><span class="quote-persona persona-casual">Casual user</span> Mr. Washington, Grade 5</div>
+        </div>
+        <div class="quote-block">
+          "I've had kids I can see in retrospect never built certain skills. But at the time, I didn't know what the data was telling me or what I was supposed to do about it. By the time it was obvious, it was already showing up as a behavior problem."
+          <div class="quote-attr"><span class="quote-persona persona-casual">Casual user</span> Mr. Washington, Grade 5</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ms. Patel -->
+  <div class="toggle-block">
+    <button class="toggle-btn" onclick="toggleBlock(this)">
+      <span class="toggle-arrow">▶</span>
+      <span class="toggle-label">Ms. Patel &nbsp;<span style="font-weight:400; color:#9B9A97;">Kindergarten · Casual user</span></span>
+    </button>
+    <div class="toggle-body">
+      <div class="quote-list">
+        <div class="quote-block">
+          "I do thumbs up, thumbs down and I can see that half the class is giving me a sideways hand. I know some kids didn't get it. But then what? I don't know if I'm supposed to redo the lesson, find a different book, do a small group pull. Nothing tells me."
+          <div class="quote-attr"><span class="quote-persona persona-casual">Casual user</span> Ms. Patel, Kindergarten</div>
+        </div>
+        <div class="quote-block">
+          "I think about it more like — I have the signal. I just don't have the translation. I can see the check-in results and know something's off, but the curriculum doesn't tell me what an appropriate response is. Is it reteach? Is it Tier 2? I don't know."
+          <div class="quote-attr"><span class="quote-persona persona-casual">Casual user</span> Ms. Patel, Kindergarten</div>
+        </div>
+        <div class="quote-block">
+          "In kindergarten, everything is so scaffolded. I know exactly what to do when a kid can't identify a letter — there's a whole intervention for that. But when a kid can't identify their own feelings? I'm on my own."
+          <div class="quote-attr"><span class="quote-persona persona-casual">Casual user</span> Ms. Patel, Kindergarten</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Recurring theme -->
+  <div class="section-heading">🔁 Recurring Theme</div>
+
+  <div class="theme-block">
+    <div class="theme-block-header">
+      <div class="theme-eyebrow">Heard across all 5 interviews</div>
+      <div class="theme-title">Teachers see the data. They don't know what to do with it — so they move on, and some students never get the instruction they needed.</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-description">
+        Across every interview, the same gap surfaced: teachers can collect assessment data, and many of them do look at it — but the data doesn't translate into an instructional decision. When exit tickets show that some students didn't grasp a skill, teachers are left asking themselves: <em>Do I reteach the same lesson? Try a different approach? Pull a small group? Move a student to Tier 2?</em> Nothing in the platform answers that question.
+        <br><br>
+        This is different from not having data. The problem isn't missing information — it's a missing bridge between the data and the right instructional response. In academic subjects, teachers have a toolkit: small groups, differentiated texts, intervention programs. For SEL, that toolkit doesn't exist in the same accessible form. So even teachers who are actively looking at assessment results end up defaulting to the next lesson in the sequence — not because they don't care, but because the platform gives them no guidance on how to change instruction for students who aren't there yet.
+      </div>
+
+      <div class="spectrum-label">The gap shows up across the full user spectrum</div>
+      <div class="spectrum">
+        <div class="spectrum-seg seg-1">
+          <div class="spectrum-seg-label">Hesitant (Ms. Halloway)</div>
+          <div class="spectrum-seg-desc">Has seen data. Doesn't know if it means reteach, differentiate, or refer. Does nothing.</div>
+        </div>
+        <div class="spectrum-seg seg-2">
+          <div class="spectrum-seg-label">Casual (Ms. Meyer, Mr. Washington, Ms. Patel)</div>
+          <div class="spectrum-seg-desc">Collects data and looks at it. Doesn't know what instructional move it calls for. Moves on anyway.</div>
+        </div>
+        <div class="spectrum-seg seg-3">
+          <div class="spectrum-seg-label">Power user (Mr. Ramirez)</div>
+          <div class="spectrum-seg-desc">Makes judgment calls on instructional response. Acknowledges they're guesses. No platform guidance.</div>
+        </div>
+      </div>
+
+      <div class="finding-callout">
+        <strong>The finding:</strong> The gap is not data collection — it's data interpretation. Teachers across every experience level and usage pattern face the same moment of paralysis: <em>I can see that some kids didn't get it. I don't know what I'm supposed to do about it.</em> Without a clear bridge from assessment result to instructional action, the default is always to move forward.
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Implication -->
+  <div class="section-heading">➡️ Implication for Product</div>
+  <div class="implication-block">
+    <div class="implication-eyebrow">What this means for the assessment platform</div>
+    <div class="implication-text">
+      The opportunity is not to build a better data dashboard. Teachers aren't failing to find the data — they're failing to know what it means instructionally. The opportunity is to <strong>close the gap between assessment result and instructional action</strong>: to tell a teacher not just that four students struggled, but what to do about it. Reteach with a different approach? Try the Tier 2 support activity? Move on with a targeted check-in for those students? That translation — from data to decision — is what's missing. The platform has the data. It needs to speak the language of instruction.
+    </div>
+  </div>
+
+  <footer>
+    Prepared by Mary Gurley · Senior PM Skills Assessment · CharacterStrong · April 2026 · All teacher names are fictional; personas based on real usage patterns.
+  </footer>
+
+</div>
+
+<script>
+  function toggleBlock(btn) {
+    const arrow = btn.querySelector('.toggle-arrow');
+    const body = btn.nextElementSibling;
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    arrow.classList.toggle('open', !isOpen);
+  }
+</script>
+</body>
+</html>
