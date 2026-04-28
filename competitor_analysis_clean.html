@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEL Assessment Landscape — Competitor Teardown</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    background: #F4F7F8; color: #1E2D2F; font-size: 14px; min-height: 100vh;
+  }
+
+  .header { background: #1B4F5B; color: white; padding: 40px 48px 36px; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .cs-badge {
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px; padding: 5px 14px; font-size: 12px;
+    font-weight: 500; color: rgba(255,255,255,0.85); letter-spacing: 0.03em;
+  }
+  .header-meta { font-size: 12px; color: rgba(255,255,255,0.55); text-align: right; }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .header h1 span { color: #89C5CC; }
+  .header p { font-size: 14px; color: rgba(255,255,255,0.65); max-width: 600px; line-height: 1.6; }
+
+  .context-strip {
+    background: #E8A838; color: #1B2810; padding: 12px 48px;
+    font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px;
+  }
+
+  .main { padding: 36px 48px 60px; max-width: 980px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #5A7A80; margin-bottom: 16px; margin-top: 36px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  /* Competitor cards */
+  .comp-card {
+    background: white; border-radius: 12px; border: 1px solid #E2ECEE;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05); margin-bottom: 16px; overflow: hidden;
+  }
+
+  .comp-card-header {
+    padding: 18px 24px 0; display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 16px; cursor: pointer;
+  }
+  .comp-card-header-left { flex: 1; }
+  .comp-name { font-size: 17px; font-weight: 700; color: #1B4F5B; margin-bottom: 2px; }
+  .comp-tagline { font-size: 12.5px; color: #9AAFB3; margin-bottom: 10px; }
+  .comp-overview-text {
+    font-size: 13px; color: #5A7A80; line-height: 1.65;
+    padding-bottom: 16px; border-bottom: 1px solid #EEF2F3;
+    margin-bottom: 0;
+  }
+
+  .comp-type-badge {
+    flex-shrink: 0; border-radius: 6px; padding: 5px 12px;
+    font-size: 11.5px; font-weight: 600; white-space: nowrap;
+    background: #EDF5F6; color: #1B4F5B;
+  }
+
+  /* Q&A grid */
+  .comp-qa { padding: 16px 24px 20px; }
+  .qa-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid #EEF2F3; border-radius: 8px; overflow: hidden;
+  }
+  .qa-cell {
+    padding: 12px 16px; border-right: 1px solid #EEF2F3;
+    border-bottom: 1px solid #EEF2F3;
+  }
+  .qa-cell:nth-child(2n) { border-right: none; }
+  .qa-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .qa-cell.full-width {
+    grid-column: 1 / -1; border-right: none;
+  }
+  .qa-cell.full-width:last-child { border-bottom: none; }
+
+  .qa-label {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: #9AAFB3; margin-bottom: 5px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .qa-value { font-size: 13px; color: #2A4A50; line-height: 1.6; }
+  .qa-value ul { padding-left: 16px; margin-top: 3px; }
+  .qa-value li { margin-bottom: 3px; font-size: 12.5px; }
+
+  .badge {
+    display: inline-block; border-radius: 5px;
+    padding: 2px 9px; font-size: 11.5px; font-weight: 500;
+  }
+  .badge-green  { background: #D7F0E3; color: #1D7A4A; }
+  .badge-red    { background: #FDDEDE; color: #C03030; }
+  .badge-yellow { background: #FDF3D7; color: #9B7010; }
+  .badge-gray   { background: #EAEDF0; color: #5A6A70; }
+
+  /* Gap bar */
+  .gap-bar {
+    margin: 14px 0 0;
+    background: #FEF3F2; border-left: 4px solid #E03E3E;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 16px;
+    font-size: 13px; color: #37352F; line-height: 1.6;
+  }
+  .gap-bar-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: #E03E3E; margin-bottom: 3px;
+  }
+
+  /* Opportunity */
+  .opp-card {
+    background: linear-gradient(135deg, #1B4F5B 0%, #028090 100%);
+    border-radius: 12px; padding: 28px 32px; color: white;
+    box-shadow: 0 3px 14px rgba(27,79,91,0.25);
+  }
+  .opp-eyebrow {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: #89C5CC; margin-bottom: 6px;
+  }
+  .opp-title { font-size: 19px; font-weight: 700; margin-bottom: 16px; }
+  .opp-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .opp-cell {
+    padding: 12px 16px; border-right: 1px solid rgba(255,255,255,0.12);
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  .opp-cell:nth-child(2n) { border-right: none; }
+  .opp-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .opp-cell.full { grid-column: 1/-1; border-right: none; }
+  .opp-cell.full:last-child { border-bottom: none; }
+  .opp-label {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: rgba(255,255,255,0.5); margin-bottom: 4px;
+  }
+  .opp-value { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.6; }
+  .opp-value strong { color: #89C5CC; }
+
+  .opp-highlight {
+    background: rgba(232,168,56,0.2); border: 1px solid rgba(232,168,56,0.4);
+    border-radius: 6px; padding: 12px 16px;
+    font-size: 13.5px; color: white; line-height: 1.7;
+    font-style: italic;
+  }
+  .opp-highlight strong { color: #E8A838; font-style: normal; }
+
+  /* Insights */
+  .insights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .insight-card {
+    background: white; border-radius: 10px; padding: 20px;
+    border-top: 4px solid #028090; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .insight-card.accent { border-top-color: #E8A838; }
+  .insight-num { font-size: 32px; font-weight: 800; color: #1B4F5B; line-height: 1; margin-bottom: 4px; }
+  .insight-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: #5A7A80; margin-bottom: 8px;
+  }
+  .insight-body { font-size: 12.5px; color: #4A6A70; line-height: 1.6; }
+
+  footer {
+    margin-top: 40px; font-size: 11.5px; color: #9AAFB3;
+    text-align: center; padding-top: 20px; border-top: 1px solid #DDE8EA;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="cs-badge">CharacterStrong · Skills Assessment</span>
+    <div class="header-meta">Mary Gurley · April 2026</div>
+  </div>
+  <h1>SEL <span>Assessment</span> Landscape</h1>
+  <p>Competitor teardown — what is each tool actually building, who are they building it for, and where do they fall short for classroom teachers?</p>
+</div>
+
+<div class="context-strip">
+  <span>📌</span>
+  <strong>Scope note:</strong>&nbsp; Intellispark Pro (CharacterStrong's active integration, launched Winter 2025) is excluded. Focus here is the broader market.
+</div>
+
+<div class="main">
+
+  <div class="section-label">Competitor Teardowns</div>
+
+  <!-- Panorama -->
+  <div class="comp-card">
+    <div class="comp-card-header">
+      <div class="comp-card-header-left">
+        <div class="comp-name">Panorama Education</div>
+        <div class="comp-tagline">panoramaed.com · District SEL analytics</div>
+        <div class="comp-overview-text">Provides districts with SEL survey tools and data dashboards that help administrators measure student social-emotional well-being at scale. Used by thousands of districts to report SEL outcomes to school boards and funders. The primary audience is district leadership, not classroom teachers.</div>
+      </div>
+      <span class="comp-type-badge">🏢 District tool</span>
+    </div>
+    <div class="comp-qa">
+      <div class="qa-grid">
+        <div class="qa-cell">
+          <div class="qa-label">📐 Grade range</div>
+          <div class="qa-value">K–12</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">👤 Primary user</div>
+          <div class="qa-value">Administrators and district leaders — teachers collect data but aren't the audience</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📝 How assessment works</div>
+          <div class="qa-value">Student-completed SEL surveys (10–20 questions), administered 2–3× per year. Measures competencies like self-management and growth mindset.</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📊 Reporting & data</div>
+          <div class="qa-value">District-wide dashboards for trends by school, grade, and demographic group. Built for leadership presentations, not daily instruction.</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📚 Tied to curriculum?</div>
+          <div class="qa-value"><span class="badge badge-red">No</span>&nbsp; Surveys are standalone — completely disconnected from what teachers are actually teaching</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">🏷️ MTSS / Tier support?</div>
+          <div class="qa-value"><span class="badge badge-yellow">Limited</span>&nbsp; Aggregate data can inform school-level tier decisions but doesn't identify individual students for support</div>
+        </div>
+        <div class="qa-cell full-width">
+          <div class="qa-label">✨ Unique features</div>
+          <div class="qa-value">Demographic disaggregation (race, gender, ELL) · Family and staff surveys alongside student surveys · Longitudinal trend reporting across school years</div>
+        </div>
+      </div>
+      <div class="gap-bar">
+        <div class="gap-bar-label">Key Gap</div>
+        Solves the district reporting problem, not the teacher instruction problem. 2–3× per year cadence misses every instructional moment. Teachers get no guidance on what to do after seeing results. Fundamentally an admin tool.
+      </div>
+    </div>
+  </div>
+
+  <!-- Aperture -->
+  <div class="comp-card">
+    <div class="comp-card-header">
+      <div class="comp-card-header-left">
+        <div class="comp-name">Aperture Education (DESSA)</div>
+        <div class="comp-tagline">apertureed.com · MTSS SEL screening</div>
+        <div class="comp-overview-text">The Devereux Student Strengths Assessment (DESSA) is a standardized, norm-referenced SEL screening tool used in MTSS frameworks. Gives schools research-backed data for identifying students who need Tier 2 or Tier 3 SEL intervention — primarily used by counselors, psychologists, and MTSS teams, not classroom teachers.</div>
+      </div>
+      <span class="comp-type-badge">🏥 Specialist tool</span>
+    </div>
+    <div class="comp-qa">
+      <div class="qa-grid">
+        <div class="qa-cell">
+          <div class="qa-label">📐 Grade range</div>
+          <div class="qa-value">K–8 (DESSA); Pre-K and high school versions also available</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">👤 Primary user</div>
+          <div class="qa-value">School counselors, psychologists, MTSS specialists — teachers complete ratings, but results flow to intervention teams</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📝 How assessment works</div>
+          <div class="qa-value">Teachers complete a 72-item behavioral rating scale per student, 3× per year. Scores against national norms to identify students above or below benchmark.</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📊 Reporting & data</div>
+          <div class="qa-value">Individual student SEL profiles across 8 competency areas. Designed for IEP documentation and intervention planning — not real-time instructional decisions.</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📚 Tied to curriculum?</div>
+          <div class="qa-value"><span class="badge badge-red">No</span>&nbsp; Purely a screening tool — identifies gaps but provides no guidance on how to address them through instruction</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">🏷️ MTSS / Tier support?</div>
+          <div class="qa-value"><span class="badge badge-green">Yes — core purpose</span>&nbsp; Best-in-class for formal MTSS identification and documentation. Weak on what to do after identifying a need.</div>
+        </div>
+        <div class="qa-cell full-width">
+          <div class="qa-label">✨ Unique features</div>
+          <div class="qa-value">Norm-referenced national benchmarks defensible for IEP/legal use · Strengths-based framing (measures assets, not just deficits) · Research-validated across 15+ years</div>
+        </div>
+      </div>
+      <div class="gap-bar">
+        <div class="gap-bar-label">Key Gap</div>
+        Designed for identification, not instruction. Rating every student quarterly is a significant teacher burden — and after completing it, teachers get no actionable guidance for their classroom. Tells you who needs help; doesn't help you help them.
+      </div>
+    </div>
+  </div>
+
+  <!-- Second Step -->
+  <div class="comp-card">
+    <div class="comp-card-header">
+      <div class="comp-card-header-left">
+        <div class="comp-name">Second Step</div>
+        <div class="comp-tagline">secondstep.org · SEL curriculum (direct competitor)</div>
+        <div class="comp-overview-text">K–8 evidence-based SEL curriculum from Committee for Children — the closest structural competitor to CharacterStrong. Provides full lesson plans, student materials, and teacher guides organized around four core SEL competency areas. Digital versions include basic embedded comprehension checks, making this the most instructive comparison for what CharacterStrong could build — and do better.</div>
+      </div>
+      <span class="comp-type-badge">📗 SEL curriculum</span>
+    </div>
+    <div class="comp-qa">
+      <div class="qa-grid">
+        <div class="qa-cell">
+          <div class="qa-label">📐 Grade range</div>
+          <div class="qa-value">Pre-K – Grade 8; high school version sold separately</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">👤 Primary user</div>
+          <div class="qa-value"><strong>Classroom teachers</strong> — the most direct analog to CharacterStrong's user</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📝 How assessment works</div>
+          <div class="qa-value">Low-fidelity embedded checks within digital lesson modules — mostly multiple choice comprehension questions. Not a systematic assessment framework; varies by grade and unit. No class-wide data view.</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📊 Reporting & data</div>
+          <div class="qa-value">Individual student completion tracking only. No class-wide synthesis, no trend data, no flagging for students who may need support. Teachers see completion, not understanding.</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📚 Tied to curriculum?</div>
+          <div class="qa-value"><span class="badge badge-yellow">Partial</span>&nbsp; Checks connect to their lesson content only — teachers using CharacterStrong cannot use Second Step's assessment features</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">🏷️ MTSS / Tier support?</div>
+          <div class="qa-value"><span class="badge badge-yellow">Limited</span>&nbsp; Some grade levels include Tier 2 extension activities, but no automated tier identification or flagging</div>
+        </div>
+        <div class="qa-cell full-width">
+          <div class="qa-label">✨ Unique features</div>
+          <div class="qa-value">Longest-standing, most widely adopted SEL curriculum in the US · Strong research base and CASEL alignment documentation · Family take-home materials tied to each lesson</div>
+        </div>
+      </div>
+      <div class="gap-bar">
+        <div class="gap-bar-label">Key Gap</div>
+        The closest model — but their assessment is low-fidelity and locked to their own content. No tier identification, no class-level synthesis, no "what next." This is the most instructive comparison: CharacterStrong has the same starting point but the opportunity to go much further.
+      </div>
+    </div>
+  </div>
+
+  <!-- ClassDojo -->
+  <div class="comp-card">
+    <div class="comp-card-header">
+      <div class="comp-card-header-left">
+        <div class="comp-name">ClassDojo</div>
+        <div class="comp-tagline">classdojo.com · Behavior management & parent communication</div>
+        <div class="comp-overview-text">Free classroom behavior management and parent communication platform used by over 50 million teachers, students, and families worldwide. Teachers award or remove "points" for behaviors and share class moments with parents in real time. Often conflated with SEL tools because of its behavior focus — but behavior tracking is not skill assessment.</div>
+      </div>
+      <span class="comp-type-badge">📢 Behavior tool</span>
+    </div>
+    <div class="comp-qa">
+      <div class="qa-grid">
+        <div class="qa-cell">
+          <div class="qa-label">📐 Grade range</div>
+          <div class="qa-value">K–8; most popular in elementary (K–5)</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">👤 Primary user</div>
+          <div class="qa-value">Teachers and parents — designed around parent-facing communication as much as classroom management</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📝 How assessment works</div>
+          <div class="qa-value">Teacher-observed behavior logging — tapping a button to award/deduct points for pre-defined behaviors. This is observation, not assessment. Measures compliance signals, not skill acquisition.</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📊 Reporting & data</div>
+          <div class="qa-value">Class and individual behavior reports; parent-facing portfolio. Data is anecdotal and teacher-defined — no standardization, no benchmarks across classrooms.</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📚 Tied to curriculum?</div>
+          <div class="qa-value"><span class="badge badge-red">No</span>&nbsp; Has added some SEL mini-lessons (Big Life Journal content) but these are entirely separate from any SEL curriculum a teacher uses</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">🏷️ MTSS / Tier support?</div>
+          <div class="qa-value"><span class="badge badge-red">No</span>&nbsp; No benchmarks, no tier flagging, no intervention guidance — behavior patterns could theoretically inform decisions but the platform provides no structure for this</div>
+        </div>
+        <div class="qa-cell full-width">
+          <div class="qa-label">✨ Unique features</div>
+          <div class="qa-value">Real-time parent communication (photos, messages, updates) · Free — massive adoption due to zero cost barrier · Class Story feature for sharing classroom culture moments</div>
+        </div>
+      </div>
+      <div class="gap-bar">
+        <div class="gap-bar-label">Key Gap</div>
+        Behavior points ≠ SEL skill acquisition. Giving a student a "Respect" point doesn't measure whether they've learned what respect means or can apply it in a new situation. Not designed for instruction or learning — designed for management and communication.
+      </div>
+    </div>
+  </div>
+
+  <!-- Formative / Nearpod -->
+  <div class="comp-card">
+    <div class="comp-card-header">
+      <div class="comp-card-header-left">
+        <div class="comp-name">Formative / Nearpod</div>
+        <div class="comp-tagline">goformative.com · nearpod.com · General formative assessment</div>
+        <div class="comp-overview-text">General-purpose formative assessment platforms that let teachers embed live quizzes, polls, and open-ended questions into any lesson. Both are fully content-agnostic — teachers create all their own questions. Technically capable but require the most work from teachers to apply to SEL content, and give them the least back.</div>
+      </div>
+      <span class="comp-type-badge">📋 Assessment tool</span>
+    </div>
+    <div class="comp-qa">
+      <div class="qa-grid">
+        <div class="qa-cell">
+          <div class="qa-label">📐 Grade range</div>
+          <div class="qa-value">K–12</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">👤 Primary user</div>
+          <div class="qa-value">Classroom teachers building and running formative checks across any subject area</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📝 How assessment works</div>
+          <div class="qa-value">Student-completed: multiple choice, short answer, drawing, polls, matching. Teachers build all questions manually. Results appear live on teacher view as students respond.</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📊 Reporting & data</div>
+          <div class="qa-value">Real-time class view showing correct/incorrect responses; individual breakdown after session. No longitudinal tracking, no curriculum sequence integration, no automated interpretation.</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">📚 Tied to curriculum?</div>
+          <div class="qa-value"><span class="badge badge-red">No — intentionally</span>&nbsp; Content-agnostic by design. A teacher could use it with CharacterStrong but must write all questions from scratch with zero guidance on what to ask or how to interpret SEL responses</div>
+        </div>
+        <div class="qa-cell">
+          <div class="qa-label">🏷️ MTSS / Tier support?</div>
+          <div class="qa-value"><span class="badge badge-red">No</span>&nbsp; No benchmarks, no tier flagging, no connection to support frameworks. Teacher must interpret and act entirely on their own.</div>
+        </div>
+        <div class="qa-cell full-width">
+          <div class="qa-label">✨ Unique features</div>
+          <div class="qa-value">Real-time live class results during instruction · Wide question variety (draw, collaborate, annotate) · Nearpod: immersive content including VR field trips and 3D models</div>
+        </div>
+      </div>
+      <div class="gap-bar">
+        <div class="gap-bar-label">Key Gap</div>
+        The most technically capable assessment tool here — but entirely teacher-built and content-agnostic. No SEL skill framework, no scope & sequence awareness, no tier support, no interpretation logic. Maximum teacher effort; minimum instructional guidance returned.
+      </div>
+    </div>
+  </div>
+
+  <!-- Opportunity -->
+  <div class="section-label" style="margin-top:32px;">The Opportunity</div>
+  <div class="opp-card">
+    <div class="opp-eyebrow">CharacterStrong · Native Assessment Platform · Built on Intellispark Pro</div>
+    <div class="opp-title">Every tool above solves a different problem. None of them solve the teacher's problem.</div>
+    <div class="opp-grid">
+      <div class="opp-cell">
+        <div class="opp-label">Primary user</div>
+        <div class="opp-value"><strong>Classroom teachers</strong> — the only user no one in this space is actually building for</div>
+      </div>
+      <div class="opp-cell">
+        <div class="opp-label">How assessment works</div>
+        <div class="opp-value">Quick checks embedded directly in CharacterStrong lessons — no separate login, no teacher setup, no context switch</div>
+      </div>
+      <div class="opp-cell">
+        <div class="opp-label">Reporting & data</div>
+        <div class="opp-value">Post-lesson class results designed to answer one question: <em>"Is this class ready to move forward, or do specific students need more support?"</em></div>
+      </div>
+      <div class="opp-cell">
+        <div class="opp-label">Tied to curriculum?</div>
+        <div class="opp-value"><strong>Yes — natively.</strong> Questions align to each lesson's skill. Results connect directly to the scope & sequence, surfacing a recommended next lesson or RESPOND activity.</div>
+      </div>
+      <div class="opp-cell">
+        <div class="opp-label">MTSS / Tier support?</div>
+        <div class="opp-value">Built in — not as a separate screening cycle, but as an output of normal lesson delivery. Consistent gaps flag students for Tier 2 support automatically.</div>
+      </div>
+      <div class="opp-cell">
+        <div class="opp-label">Grade range</div>
+        <div class="opp-value">Mirrors CharacterStrong's scope & sequence — Pre-K through 5th grade across Be Kind, Be Strong, and Be Well domains</div>
+      </div>
+      <div class="opp-cell full">
+        <div class="opp-label">What's different</div>
+        <div class="opp-value">Second Step is the closest model — but locked to their curriculum and low-fidelity. Panorama and DESSA solve admin and specialist problems. ClassDojo tracks behavior, not skills. Formative tools require teachers to do all the work. CharacterStrong's opportunity: close the <strong>teach → assess → adjust</strong> loop natively, for the teacher who's already in the platform.</div>
+      </div>
+    </div>
+    <div class="opp-highlight">
+      <strong>The question to validate first:</strong> Is the problem that teachers lack access to assessment data — or that they have data and don't know what to do with it? Discovery interviews will answer this before any build decisions are made.
+    </div>
+  </div>
+
+  <!-- Key findings -->
+  <div class="section-label" style="margin-top:32px;">Key Findings</div>
+  <div class="insights-grid">
+    <div class="insight-card">
+      <div class="insight-num">0 / 5</div>
+      <div class="insight-label">Embedded in SEL Curriculum</div>
+      <div class="insight-body">No competitor offers assessment native to an SEL curriculum. Every tool requires a context switch — friction teachers won't sustain.</div>
+    </div>
+    <div class="insight-card accent">
+      <div class="insight-num">3 / 5</div>
+      <div class="insight-label">Solving Admin Problems, Not Teacher Problems</div>
+      <div class="insight-body">Panorama, DESSA, and ClassDojo are primarily designed to give administrators and specialists data — not to help a classroom teacher decide what to do next week.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-num">1 / 5</div>
+      <div class="insight-label">MTSS Tier Support</div>
+      <div class="insight-body">Only DESSA identifies Tier 2/3 needs — through a quarterly teacher-rating process. No tool surfaces tier needs in the moment of learning, tied to actual curriculum content.</div>
+    </div>
+  </div>
+
+  <footer>
+    Prepared by Mary Gurley · Senior PM Skills Assessment · CharacterStrong · April 2026 · Based on publicly available product information and market research.
+  </footer>
+</div>
+</body>
+</html>
